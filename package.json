@@ -1,0 +1,61 @@
+{
+  "name": "becraft",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Contract-Driven Backend Development Framework - Craft Production Backends, Not Prototypes",
+  "author": {
+    "name": "becraft contributors"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phitsanu07/becraft.git"
+  },
+  "homepage": "https://github.com/phitsanu07/becraft#readme",
+  "bugs": {
+    "url": "https://github.com/phitsanu07/becraft/issues"
+  },
+  "keywords": [
+    "ai",
+    "backend",
+    "framework",
+    "claude",
+    "claude-code",
+    "antigravity",
+    "nestjs",
+    "postgresql",
+    "prisma",
+    "contract-driven",
+    "api-first",
+    "agentic"
+  ],
+  "bin": {
+    "becraft": "./bin/becraft-cli.js",
+    "be": "./bin/becraft-cli.js"
+  },
+  "main": "bin/becraft-cli.js",
+  "files": [
+    "bin",
+    "installer",
+    "scripts",
+    "src",
+    "docs",
+    "SPEC.md"
+  ],
+  "scripts": {
+    "install:local": "node bin/becraft-cli.js install",
+    "list": "node bin/becraft-cli.js list",
+    "status": "node bin/becraft-cli.js status",
+    "bundle": "node scripts/bundle.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "inquirer": "^9.2.23",
+    "ora": "^8.0.1",
+    "fs-extra": "^11.2.0"
+  }
+}

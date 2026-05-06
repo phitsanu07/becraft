@@ -1,0 +1,43 @@
+// becraft Prisma schema
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================
+// Add your models here using becraft conventions:
+//
+// - UUID PKs:        @id @default(uuid()) @db.Uuid
+// - Timestamps:      createdAt + updatedAt + deletedAt?
+// - Snake case map:  @map("snake_case") + @@map("table_plural")
+// - Index FKs:       @@index([fkColumn])
+// - Soft delete:     @@index([deletedAt])
+// =====================================================
+
+// Example User model (uncomment when needed)
+// model User {
+//   id              String    @id @default(uuid()) @db.Uuid
+//   email           String    @unique
+//   passwordHash    String    @map("password_hash")
+//   name            String
+//   role            UserRole  @default(USER)
+//   emailVerifiedAt DateTime? @map("email_verified_at")
+//   createdAt       DateTime  @default(now()) @map("created_at")
+//   updatedAt       DateTime  @updatedAt @map("updated_at")
+//   deletedAt       DateTime? @map("deleted_at")
+//
+//   @@index([email])
+//   @@index([deletedAt])
+//   @@map("users")
+// }
+//
+// enum UserRole {
+//   USER
+//   ADMIN
+// }

@@ -1,0 +1,10 @@
+.git/
+.github/
+node_modules/
+coverage/
+test/
+*.test.js
+*.spec.js
+.eslintcache
+.DS_Store
+SPEC.md
