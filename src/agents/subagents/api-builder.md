@@ -255,12 +255,38 @@ Never duplicate. Reuse first.
 
 ```yaml
 skills:
-  - api-design          # 🔌 Core (primary)
-  - contract-first      # 🎯 CDD workflow
-  - error-handling      # 🚨 RFC 7807
-  - response-format     # 📝 3-section
-  - memory-system       # 💾 Memory
+  - api-design                  # 🔌 Core (primary)
+  - contract-first              # 🎯 CDD workflow
+  - error-handling              # 🚨 RFC 7807
+  - response-format             # 📝 3-section
+  - memory-system               # 💾 Memory
+  - supabase-query-patterns     # 🟢 LOAD when stack = Supabase JS
 ```
+
+### ⚠️ Stack-Conditional Skill Loading (CRITICAL)
+
+After Stack Detection (above), if data-access stack = **Supabase JS Client**:
+
+1. **MUST load** `supabase-query-patterns` skill before generating any
+   `.from(...).select/.or/.and/.filter` call.
+2. **MUST import** helpers from `.be/snippets/supabase-search.helper.ts`
+   instead of hand-rolling escape/filter logic:
+   ```typescript
+   import {
+     escapePostgrestValue,
+     buildIlikeOrFilter,
+     searchAcrossColumns,
+     mapSupabaseError,
+   } from '../../snippets/supabase-search.helper';
+   ```
+3. **MUST reject** these anti-patterns in your own output:
+   - `%` as wildcard (PostgREST uses `*`)
+   - User input passed unescaped into `.or()` / `.and()` / `.filter()` strings
+   - `.single()` for find-by-id (use `.maybeSingle()` + 404)
+   - Throwing raw `PostgrestError` (use `mapSupabaseError()`)
+   - `SUPABASE_ADMIN_CLIENT` for user-facing reads (use anon + RLS)
+4. **Quality gate addition**: every Supabase query in generated code must
+   pass the Safe-Pattern Checklist in the skill before phase ends.
 
 ---
 

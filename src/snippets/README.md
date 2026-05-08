@@ -16,6 +16,7 @@ Reusable code patterns referenced by agents/skills instead of being inlined.
 | `nestjs-bootstrap.ts` | `main.ts` skeleton with NestFactory + Swagger + global pipes | bootstrap-agent |
 | `prisma-service.ts` | NestJS `PrismaService` with lifecycle hooks | bootstrap-agent (Prisma) |
 | `supabase-service.ts` | NestJS `SupabaseService` with DI client | bootstrap-agent (Supabase) |
+| `supabase-search.helper.ts` | PostgREST escape, ilike-or builder, `mapSupabaseError` (BCFT-014) | api-builder (Supabase) |
 | `pagination-helper.ts` | Cursor pagination DTO + helper | api-builder |
 | `error-handler.ts` | RFC 7807 Problem Details exception filter | bootstrap-agent |
 | `env-validation.ts` | Zod schema for env validation | bootstrap-agent |

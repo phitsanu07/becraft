@@ -2,6 +2,51 @@
 
 All notable changes to becraft will be documented in this file.
 
+## [0.4.3] — 2026-05-08
+
+### Added — BCFT-014: Supabase Query Patterns Skill
+
+Closes a class of agent-generated bugs where api-builder produced PostgREST
+queries with SQL-style `%` wildcards (PostgREST uses `*`), unescaped user
+input in `.or()` filters, and raw `PostgrestError` thrown back as 500.
+
+- **New skill** `src/skills/supabase-query-patterns/SKILL.md` — wildcard
+  rules, `or()`/`and()` syntax, value escaping, error code mapping
+  (PGRST100/PGRST116/23505/42501/...), anon vs service-role guidance,
+  `.range()` pagination, `.maybeSingle()` over `.single()`, anti-patterns.
+- **New snippet** `src/snippets/supabase-search.helper.ts`:
+  - `escapePostgrestValue()` — sanitize user input for filter strings
+  - `buildIlikeOrFilter()` — compose multi-column ILIKE search safely
+  - `searchAcrossColumns()` — full helper with pagination + ordering
+  - `mapSupabaseError()` — Postgres/PostgREST → NestJS HttpException
+- **Agent updates** (`api-builder.md` + subagents variant): stack-conditional
+  loading — when stack = Supabase JS, MUST load the new skill, MUST import
+  helpers from the snippet, MUST reject `%`-wildcard / unescaped-input /
+  raw-error anti-patterns. Quality gate now blocks unsafe Supabase queries.
+- **IDE handler** (`claude-code.js`): `/be-api` skill mapping notes the
+  conditional skill load.
+- **Snippets README** lists `supabase-search.helper.ts`.
+
+### Why this matters
+
+Without the skill, LLMs default to SQL idioms (`%` wildcard, unquoted
+commas, throwing the original error). The fix lives at the prompt layer:
+new becraft installs ship the skill + helper, so generated code is correct
+on the first try without runtime validators or MCP servers.
+
+### Migration
+
+Existing projects that already ran `becraft install`:
+
+```bash
+npx -y github:phitsanu07/becraft#v0.4.3 install --quick
+```
+
+Re-running install copies the new skill + snippet into `.be/`. No
+breaking changes to existing files.
+
+---
+
 ## [0.4.2] — 2026-05-08
 
 ### Fixed

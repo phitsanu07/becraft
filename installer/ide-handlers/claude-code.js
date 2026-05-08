@@ -188,7 +188,7 @@ Use Claude's \`Task\` tool to delegate to sub-agents.
 |---|---|---|
 | \`/be-bootstrap\` | contract-first, schema-design, api-design, auth-patterns | plan + schema + api + auth + test |
 | \`/be-schema\` | schema-design, contract-first | schema-architect |
-| \`/be-api\` | api-design, contract-first, error-handling | api-builder |
+| \`/be-api\` | api-design, contract-first, error-handling, supabase-query-patterns (if Supabase) | api-builder |
 | \`/be-auth\` | auth-patterns | auth-guard |
 | \`/be-observe\` | observability | observability |
 | \`/be-test\` | testing-pyramid, error-handling | test-runner |

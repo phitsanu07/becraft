@@ -1,6 +1,6 @@
 {
   "name": "becraft",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "type": "module",
   "description": "Contract-Driven Backend Development Framework - Craft Production Backends, Not Prototypes",
   "author": {
