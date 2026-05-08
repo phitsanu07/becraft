@@ -45,29 +45,133 @@ Memory enables AI to:
 
 ---
 
-## 🔄 Memory Protocol
+## 🔄 Memory Protocol (Lazy — BCFT-001)
 
 ### BEFORE Starting ANY Work
 
 ```
-STEP 1: Check .be/memory/ folder exists
-  ├── Doesn't exist → Create with templates
-  └── Exists → Continue
+STEP 1: Read .be/memory/_index.json FIRST
+  ├── Lists which files have meaningful content
+  ├── Token-efficient — skip empty templates
+  └── Format:
+      {
+        "files": {
+          "active":   { "populated": true,  "size_bytes": 850, ... },
+          "summary":  { "populated": false, "size_bytes": 0,   ... },
+          ...
+        }
+      }
 
-STEP 2: Read all 9 files in PARALLEL
-  └── Mandatory — use parallel tool calls
+STEP 2: Read ONLY files where populated == true
+  ├── Use parallel tool calls for batched reads
+  └── Skip files where populated == false (empty templates)
 
-STEP 3: Build context understanding
-  ├── What's the project about?
-  ├── What's the active task?
-  ├── What decisions made?
-  ├── What did other agents do?
-  ├── Current schema state?
-  └── Existing endpoints?
+STEP 3: Fresh project shortcut
+  ├── If ALL files have populated == false:
+  │   └── Skip memory entirely — just acknowledge "fresh start"
+  └── Save ~4,600 tokens on greenfield projects
 
-STEP 4: Acknowledge in response
-  └── "💾 Memory: Loaded ✅ (9 files)"
+STEP 4: Build context understanding (from populated files only)
+  ├── What's the project about? (summary)
+  ├── What's the active task? (active)
+  ├── What decisions made? (decisions)
+  ├── Current schema state? (schema)
+  └── Existing endpoints? (api-registry)
+
+STEP 5: Acknowledge in response
+  └── "💾 Memory: Loaded ✅ (N/9 populated files via index)"
 ```
+
+### Token Savings
+
+| Scenario | Old Protocol | New Lazy Protocol | Savings |
+|----------|-------------|-------------------|---------|
+| Fresh project (all empty) | ~4,600 tokens | ~150 tokens (just index) | ~97% |
+| Mid-project (3-4 populated) | ~4,600 tokens | ~2,000 tokens | ~57% |
+| Mature project (all populated) | ~4,600 tokens | ~4,600 tokens | 0% |
+
+### Updating the Index
+
+After writing to a memory file:
+```bash
+.be/scripts/update-memory-index.sh
+```
+This auto-detects size + mtime and flips `populated` based on content analysis
+(skips template scaffolding markers).
+
+---
+
+## 📜 Append-Only Event Log (BCFT-009)
+
+**Alternative pattern** for high-frequency updates: write events to
+`.be/memory/events.jsonl` instead of editing markdown files directly.
+Benefits: race-safe, audit trail, replayable, easier concurrent agents.
+
+### Append an event
+
+```bash
+.be/scripts/append-event.sh <type> <agent> '<json-data>'
+
+# Examples:
+.be/scripts/append-event.sh decision bootstrap-agent \
+  '{"id":"ADR-001","decision":"use Supabase JS","reason":"only SUPABASE_URL set"}'
+
+.be/scripts/append-event.sh endpoint_added api-builder \
+  '{"method":"GET","path":"/api/v1/products","auth":"public"}'
+
+.be/scripts/append-event.sh file_created api-builder \
+  '{"path":"src/products/products.service.ts","lines":85}'
+```
+
+### Event Types
+
+| Type | Data Schema |
+|------|-------------|
+| `decision` | `{id, decision, reason}` |
+| `file_created` / `file_modified` | `{path, lines}` |
+| `endpoint_added` | `{method, path, auth}` |
+| `schema_changed` | `{table, change}` |
+| `migration_applied` | `{name, applied_at}` |
+| `phase_started` / `phase_completed` | `{phase_name, duration_ms?}` |
+| `agent_invoked` / `agent_completed` | `{task, status?}` |
+| `stack_detected` | `{stack, source}` |
+| `feature_completed` | `{name, files}` |
+
+Full schema: `.be/memory/event-schema.json`
+
+### Snapshot regeneration
+
+```bash
+.be/scripts/snapshot-memory.sh
+```
+Reads `events.jsonl` → regenerates `decisions.md`, `changelog.md`,
+`agents-log.md`, `api-registry.md`. Idempotent — running twice produces
+the same output.
+
+### When to use events vs direct markdown edits
+
+| Task | Use |
+|------|-----|
+| Adding 1 ADR | Direct edit `decisions.md` ✅ |
+| Logging 50 file creations | Events ✅ |
+| Concurrent agents writing | Events ✅ (race-safe) |
+| User-facing edits | Direct ✅ (markdown is canonical) |
+
+---
+
+## 💾 Checkpoint Protocol (BCFT-011)
+
+For long-running tasks (>3 phases or >15 files), agents MUST checkpoint after
+each phase to enable resume on cancel/crash.
+
+```bash
+.be/scripts/resume-task.sh list                     # show checkpoints
+.be/scripts/resume-task.sh show <task-id>           # display details
+.be/scripts/resume-task.sh clean --completed        # cleanup
+```
+
+Checkpoint location: `.be/checkpoints/<task-id>.json`
+Format: see `.be/checkpoints/_example.json`
 
 ### AFTER Completing Work
 

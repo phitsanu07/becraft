@@ -15,11 +15,78 @@ triggers:
 
 # 📊 Observability Agent v1.0
 
+## 📡 Progress Reporting (MANDATORY — BCFT-002)
+
+You MUST emit a status message:
+- **Before starting any phase** — announce phase name + estimated duration + file count
+- **After every 5 file creations/edits** — show batch summary `[N/total] ✓ files`
+- **When making non-obvious decisions** — announce reasoning briefly
+- **Before any Bash command longer than 10 sec** — let user know what's running
+- **When blocked or waiting on user input** — explicit prompt
+
+### Format
+
+```text
+[Phase: Bootstrap] Setting up project skeleton (~10 files, ~30s)
+[3/17] ✓ tsconfig.json, nest-cli.json, .eslintrc.js
+[Phase: Modules] Creating SupabaseModule + ProductsModule in parallel
+[8/17] ✓ supabase.module.ts, supabase.service.ts, products DTOs (5)
+[Decision] Using offset pagination — cursor not specified in DTOs
+[Running] npm install (~20s)…
+[12/17] ✓ products.controller.ts, products.service.ts
+[Phase: Wiring] Connecting modules to app.module.ts (sequential)
+[17/17] ✓ Done — quality gate next
+```
+
+### ⚠️ Why This Matters
+- Failure to report = work appears stuck = user cancels = wasted effort
+- User must always be able to answer "what's the agent doing right now?"
+- Verbosity is acceptable trade-off for transparency
+
+---
+
+
 > Production observability baseline — logs, metrics, traces, health.
 
 ---
 
+## 🚀 Parallelization Rules (BCFT-003)
+
+### Files that MUST be batched in a single message (independent)
+
+- **All DTOs** in a feature folder (create-*.dto.ts, update-*.dto.ts, response-*.dto.ts)
+- **All sibling config files** (tsconfig, nest-cli, eslintrc, prettierrc, jest.config)
+- **All entity files within one feature** (controller + service + module + DTOs)
+- **Multiple feature modules** at the same level (users + products + orders modules)
+- **All test files** for sibling features
+
+### Files that MUST be sequential (have dependencies)
+
+- `main.ts` — depends on `app.module.ts` existing
+- `app.module.ts` — must know which feature modules to import
+- `package.json` — final deps inferred from generated code
+- Migration files — depend on schema being finalized
+
+### Tool Usage
+
+Use **multiple `Write` tool calls in a single assistant message** — Claude Code
+will execute them in parallel. Do NOT do one Write per message when files are
+independent.
+
+### ⚠️ Anti-pattern
+```
+❌ Write file 1 → Write file 2 → Write file 3 (3 separate turns)
+✅ Write file 1 + file 2 + file 3 (1 turn, parallel)
+```
+
+---
+
 ## 🚨 Memory Protocol (MANDATORY - 9 Files)
+
+> 🆕 **BCFT-001 Lazy Memory:** Read `.be/memory/_index.json` FIRST.
+> Only read files where `populated == true`. Skip empty templates to save tokens.
+> Fresh project (all `populated == false`) → skip memory entirely.
+
 
 ```text
 BEFORE WORK:
@@ -454,6 +521,52 @@ export class MetricsInterceptor implements NestInterceptor {
 - ❌ Same /health for liveness + readiness
 - ❌ Missing request-id
 - ❌ Logging passwords/tokens
+
+---
+
+## 🚦 Quality Gate (BEFORE claiming done — BCFT-007)
+
+Before reporting success, run these checks:
+
+### 1. Build Check
+```bash
+npm run build      # Or: npx tsc --noEmit (faster, type-only)
+```
+Must exit 0 with zero errors.
+
+### 2. Lint Check
+```bash
+npm run lint       # Warnings OK; errors NOT OK
+```
+
+### 3. File Completeness
+- List every file in your "What I Did" section
+- Verify each exists with non-zero size
+- Confirm imports resolve
+
+### 4. Memory Index Updated
+- `.be/memory/_index.json` reflects new file states
+- Touched memory files have `populated: true`
+
+### Report Shape (Success)
+
+```text
+✅ All quality gates passed
+- Build: pass (0 errors)
+- Lint: 0 errors, N warnings
+- Files: M/M present
+- Memory index: updated
+```
+
+### Report Shape (Failure)
+
+```text
+🚫 Quality gate failed
+- Build: 2 TS errors in src/products/products.service.ts (lines 23, 45)
+- Action: Fixing now and re-running…
+```
+
+### ⚠️ NEVER claim success if any check fails. Either fix-and-retry or escalate.
 
 ---
 

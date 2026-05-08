@@ -101,7 +101,6 @@ The router classifies intent → picks right agent(s) → shows plan → execute
 | Runtime | Node.js 22 LTS |
 | Framework | NestJS 10 |
 | Database | PostgreSQL 16 |
-| ORM | Prisma 5 |
 | Cache | Redis 7 |
 | Queue | BullMQ |
 | Auth | Passport (JWT) |
@@ -111,6 +110,8 @@ The router classifies intent → picks right agent(s) → shows plan → execute
 | Metrics | Prometheus (prom-client) |
 | Container | Docker + docker-compose |
 | Language | TypeScript (strict) |
+
+> **ORM:** ผู้ใช้เลือกได้ — Prisma (default & recommended), TypeORM, Drizzle, MikroORM. Skills/agents มีตัวอย่างเป็น Prisma แต่ pattern โดยทั่วไปใช้ได้กับ ORM อื่น
 
 **No decisions to make** — opinionated stack ready to go.
 

@@ -1,0 +1,68 @@
+{
+  "$schema": "becraft-memory-index/v1",
+  "version": 1,
+  "description": "Memory state index — agents read this FIRST, then only files where populated == true",
+  "files": {
+    "active": {
+      "populated": false,
+      "size_bytes": 0,
+      "last_modified": null,
+      "purpose": "Current task + In Progress + Just Completed + Next Steps"
+    },
+    "summary": {
+      "populated": false,
+      "size_bytes": 0,
+      "last_modified": null,
+      "purpose": "Project overview + tech stack + completed features"
+    },
+    "decisions": {
+      "populated": false,
+      "size_bytes": 0,
+      "last_modified": null,
+      "purpose": "Architecture Decision Records (ADRs)"
+    },
+    "changelog": {
+      "populated": false,
+      "size_bytes": 0,
+      "last_modified": null,
+      "purpose": "Session-by-session changes"
+    },
+    "agents-log": {
+      "populated": false,
+      "size_bytes": 0,
+      "last_modified": null,
+      "purpose": "Agent activity log with auto-fixes"
+    },
+    "architecture": {
+      "populated": false,
+      "size_bytes": 0,
+      "last_modified": null,
+      "purpose": "Service structure + dependency graph"
+    },
+    "api-registry": {
+      "populated": false,
+      "size_bytes": 0,
+      "last_modified": null,
+      "purpose": "Endpoints + DTOs + auth requirements"
+    },
+    "schema": {
+      "populated": false,
+      "size_bytes": 0,
+      "last_modified": null,
+      "purpose": "DB schema + migration history"
+    },
+    "contracts": {
+      "populated": false,
+      "size_bytes": 0,
+      "last_modified": null,
+      "purpose": "OpenAPI snapshots + breaking change log"
+    }
+  },
+  "instructions": [
+    "Agents must read this index FIRST before reading memory files.",
+    "Only read files where populated == true. Skip empty templates.",
+    "After writing to a memory file, update its entry: populated: true, size_bytes, last_modified.",
+    "Use scripts/update-memory-index.sh helper (auto-detects size + mtime).",
+    "Fresh project (all populated == false) → skip memory entirely."
+  ]
+}

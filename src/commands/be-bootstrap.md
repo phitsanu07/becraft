@@ -79,7 +79,7 @@ Before executing, ALWAYS display:
 ## 🎯 Bootstrap Plan: [Project Name]
 
 **Domain:** [E-commerce / SaaS / etc.]
-**Stack:** NestJS 10 + PostgreSQL 16 + Prisma 5
+**Stack:** NestJS 10 + PostgreSQL 16 (ORM: Prisma default / TypeORM / Drizzle / MikroORM)
 
 ### 🔄 Agent Workflow
 

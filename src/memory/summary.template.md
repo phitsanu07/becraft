@@ -7,7 +7,8 @@
 
 ## Tech Stack
 - **Framework:** NestJS 10
-- **Database:** PostgreSQL 16 + Prisma 5
+- **Database:** PostgreSQL 16
+- **ORM:** [Prisma | TypeORM | Drizzle | MikroORM] _(user-configurable — fill in choice)_
 - **Cache:** Redis 7
 - **Queue:** BullMQ
 - **Auth:** Passport (JWT)

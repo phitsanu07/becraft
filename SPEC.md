@@ -24,7 +24,6 @@
 | Runtime | Node.js 22 LTS |
 | Framework | NestJS 10 |
 | Database | PostgreSQL 16 |
-| ORM | Prisma 5 |
 | Cache | Redis 7 |
 | Queue | BullMQ |
 | Auth | Passport (JWT + OAuth) |
@@ -33,6 +32,8 @@
 | Container | Docker + docker-compose |
 | Deploy | Railway (default), Fly.io (alt) |
 | Language | TypeScript (strict) |
+
+**ORM (configurable):** Prisma (default & recommended), TypeORM, Drizzle, MikroORM — ผู้ใช้เลือกได้ตามถนัด
 
 **Never ask user "which framework?" — Always use this stack in Phase 1.**
 

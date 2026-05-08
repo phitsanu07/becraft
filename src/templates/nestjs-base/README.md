@@ -33,7 +33,7 @@ Open:
 ## 📦 Built-In
 
 - ✅ **NestJS 10** with TypeScript strict mode
-- ✅ **Prisma 5** for PostgreSQL
+- ✅ **Prisma 5** for PostgreSQL _(default ORM — swap to TypeORM/Drizzle/MikroORM if preferred)_
 - ✅ **Pino** structured logging with PII redaction
 - ✅ **OpenAPI** auto-generated at /docs
 - ✅ **Validation** with class-validator + Zod env validation

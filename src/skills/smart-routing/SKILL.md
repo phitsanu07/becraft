@@ -11,6 +11,123 @@ related_skills:
 
 # Smart Routing Skill
 
+## 📊 Confidence × Size Routing Matrix (BCFT-010)
+
+After intent classification, score the request along **2 axes**:
+
+### Score Confidence (0-100%)
+| Score | Meaning |
+|-------|---------|
+| ≥90% | Crystal clear request, all signals align |
+| 70-89% | Mostly clear, minor ambiguity |
+| 50-69% | Significant ambiguity, multiple valid interpretations |
+| <50% | Unclear — request more info |
+
+### Estimate Task Size (file count)
+| Size | Examples |
+|------|----------|
+| <5 files | "fix typo", "add field to DTO", single endpoint |
+| 5-15 files | New feature module (CRUD), auth setup |
+| >15 files | Bootstrap, multi-resource bootstrap, refactor |
+
+### Routing Matrix
+
+| Confidence | Size | Route |
+|-----------|------|-------|
+| **≥90%** | <5 files | Direct to specialist (no plan) |
+| **≥90%** | 5-15 files | plan-orchestrator (light plan) → specialist |
+| **≥90%** | >15 files | plan-orchestrator (full multi-phase plan) |
+| **70-89%** | Any | plan-orchestrator → specialist |
+| **<70%** | Any | Ask clarifying question |
+
+### Special Rules
+
+- **Bootstrap tasks** (greenfield, no `package.json`) → ALWAYS go through `plan-orchestrator` first, then `bootstrap-agent`
+- **Schema changes** affecting existing data → ALWAYS plan first (destructive risk)
+- **Auth changes** → ALWAYS plan first (security-sensitive)
+- **Continue tasks** ("/be ทำต่อ") → resume from `.be/memory/active.md` directly
+
+### Examples
+
+```
+"/be fix typo in users.controller.ts line 23"
+  → Confidence 95%, Size 1 file
+  → DIRECT to api-builder/fix mode
+
+"/be add /products GET endpoint"
+  → Confidence 92%, Size 4 files (controller + service + DTOs)
+  → DIRECT to api-builder
+
+"/be build user management"
+  → Confidence 75%, Size 10-15 files
+  → plan-orchestrator (light plan)
+
+"/be bootstrap inventory system"
+  → Confidence 80%, Size 20+ files
+  → plan-orchestrator (full plan) → bootstrap-agent → ...
+
+"/be improve performance"
+  → Confidence 40%
+  → ASK USER (which endpoint? which metric?)
+```
+
+---
+
+## ✅ Pre-flight Checklist (MANDATORY — BCFT-005)
+
+Run BEFORE any agent handoff. If ANY item fails, **ASK USER** instead of delegating.
+
+### Checklist
+
+- [ ] **Stack decision is explicit** (Prisma / Supabase JS / TypeORM / Drizzle / ...)
+  - Check user request, `.env`, `decisions.md`, `package.json`
+- [ ] **Prerequisites available** (env vars, credentials, schema info)
+  - DATABASE_URL or SUPABASE_URL set if backend operations needed
+  - JWT_SECRET set if auth operations needed
+- [ ] **Project state determined** (greenfield / existing / partial)
+  - Greenfield → bootstrap-mode workflow
+  - Existing → incremental feature mode
+- [ ] **Scope boundaries clear**
+  - File count estimate (rough)
+  - Time estimate (rough)
+  - Specialist agent matches task type
+- [ ] **No conflicting recent decisions** in `.be/memory/decisions.md`
+
+### If Checklist Passes
+
+1. Show workflow plan to user (already mandated by `/be`)
+2. Delegate to specialist agent
+
+### If Checklist Fails
+
+1. Print which items failed:
+   ```
+   ⚠️ Pre-flight checklist failed:
+   - Stack decision: not explicit (no .env, no recent decisions)
+   - Project state: ambiguous (CLAUDE.md exists but no src/)
+   ```
+2. Ask user **minimum** clarifying questions
+3. Re-run checklist after answers received
+
+### Anti-pattern
+
+```
+❌ User: /be build users API
+   AI: [silently delegates to api-builder, picks Prisma by default]
+   AI: [api-builder fails because no DATABASE_URL]
+   → wasted effort
+
+✅ User: /be build users API
+   AI: ⚠️ Pre-flight check failed:
+       - Stack: not explicit
+       - DB: no DATABASE_URL or SUPABASE_URL set
+       Which data layer? (Prisma+Postgres / Supabase JS / something else?)
+       Will you provide DB credentials?
+```
+
+---
+
+
 Intelligent routing engine for the `/be` smart command. Routes any natural language backend request to the right agent(s).
 
 ---

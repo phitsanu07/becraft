@@ -89,22 +89,31 @@ You do NOT need to read separate skill/agent files — everything is in the work
 |---|---|
 | Runtime | Node.js 22 LTS |
 | Framework | NestJS 10 |
-| Database | PostgreSQL 16 + Prisma 5 |
+| Database | PostgreSQL 16 |
 | Cache | Redis 7 |
 | Queue | BullMQ |
 | Auth | Passport (JWT) |
 | Validation | class-validator + Zod |
 | Tests | Jest + Supertest + Testcontainers |
 
+> **ORM (user-configurable):** Prisma (default & recommended), TypeORM, Drizzle, MikroORM
+> — ตัวอย่างใน workflow ใช้ Prisma เป็น default
+
 ${langSection}
 
-## 🚨 MANDATORY: Memory Protocol (9 Files)
+## 🚨 MANDATORY: Memory Protocol (Lazy — BCFT-001)
 
 Memory location: **\`.be/memory/\`** (shared with Claude Code for cross-IDE sync)
 
-### BEFORE Starting Work — READ ALL 9:
+### BEFORE Starting Work — READ INDEX FIRST:
+
+1. Read \`.be/memory/_index.json\`
+2. Read ONLY files where \`populated == true\` (skip empty templates)
+3. Fresh project (all populated: false) → skip memory entirely
+
 \`\`\`
 .be/memory/
+├── _index.json         ← READ FIRST (lists populated files)
 ├── active.md
 ├── summary.md
 ├── decisions.md
@@ -116,9 +125,14 @@ Memory location: **\`.be/memory/\`** (shared with Claude Code for cross-IDE sync
 └── contracts.md
 \`\`\`
 
-### AFTER Work — UPDATE relevant files
+### AFTER Work — UPDATE relevant files + index
 
-⚠️ NEVER finish work without saving memory!
+Refresh index after writes:
+\`\`\`bash
+.be/scripts/update-memory-index.sh
+\`\`\`
+
+⚠️ NEVER finish work without saving memory + updating index!
 
 ## 🔒 Pre-Response Checkpoint (REQUIRED)
 

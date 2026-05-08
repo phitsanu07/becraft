@@ -89,6 +89,8 @@ export async function install(options) {
   if (config.installAgents) await installComponent('agents', config.targetDir);
   if (config.installCommands) await installComponent('commands', config.targetDir);
   if (config.installTemplates) await installComponent('templates', config.targetDir);
+  // BCFT-013: Copy snippets library (always included if templates installed)
+  if (config.installTemplates) await installComponent('snippets', config.targetDir);
 
   // Setup memory (9 files)
   await setupMemoryFolder(config.targetDir);
@@ -152,7 +154,7 @@ async function promptConfiguration(defaults) {
       type: 'list',
       name: 'stack',
       message: 'Stack profile:',
-      choices: [{ name: 'NestJS + PostgreSQL + Prisma', value: 'nestjs' }],
+      choices: [{ name: 'NestJS + PostgreSQL (ORM: Prisma default)', value: 'nestjs' }],
       default: 'nestjs',
     },
     {
@@ -264,7 +266,7 @@ async function generateManifest(config) {
 }
 
 async function setupMemoryFolder(targetDir) {
-  const spinner = ora('Setting up Memory System (9 files)...').start();
+  const spinner = ora('Setting up Memory System (9 files + lazy index)...').start();
   const memoryDir = join(targetDir, '.be', 'memory');
   const archiveDir = join(memoryDir, 'archive');
   const today = new Date().toISOString().split('T')[0];
@@ -298,7 +300,65 @@ async function setupMemoryFolder(targetDir) {
       await fs.writeFile(destPath, content);
     }
 
-    spinner.succeed(`Memory System ready - 9 files (.be/memory/)`);
+    // BCFT-001: Lazy Memory — copy _index.json template
+    const indexSrc = join(SRC_DIR, 'memory', '_index.template.json');
+    const indexDest = join(memoryDir, '_index.json');
+    if (!fs.existsSync(indexDest) && fs.existsSync(indexSrc)) {
+      await fs.copy(indexSrc, indexDest);
+    }
+
+    // BCFT-001: Copy update-memory-index.sh helper script
+    const scriptsDir = join(targetDir, '.be', 'scripts');
+    await fs.ensureDir(scriptsDir);
+    const helperSrc = join(__dirname, '..', 'scripts', 'update-memory-index.sh');
+    const helperDest = join(scriptsDir, 'update-memory-index.sh');
+    if (fs.existsSync(helperSrc) && !fs.existsSync(helperDest)) {
+      await fs.copy(helperSrc, helperDest);
+      await fs.chmod(helperDest, 0o755);
+    }
+
+    // BCFT-006: Copy bootstrap.sh helper script (template-based scaffolding)
+    const bootstrapSrc = join(__dirname, '..', 'scripts', 'bootstrap.sh');
+    const bootstrapDest = join(scriptsDir, 'bootstrap.sh');
+    if (fs.existsSync(bootstrapSrc) && !fs.existsSync(bootstrapDest)) {
+      await fs.copy(bootstrapSrc, bootstrapDest);
+      await fs.chmod(bootstrapDest, 0o755);
+    }
+
+    // BCFT-011: Copy resume-task.sh (checkpoint management)
+    const resumeSrc = join(__dirname, '..', 'scripts', 'resume-task.sh');
+    const resumeDest = join(scriptsDir, 'resume-task.sh');
+    if (fs.existsSync(resumeSrc) && !fs.existsSync(resumeDest)) {
+      await fs.copy(resumeSrc, resumeDest);
+      await fs.chmod(resumeDest, 0o755);
+    }
+
+    // BCFT-009: Copy event log scripts (append-event + snapshot)
+    for (const scriptName of ['append-event.sh', 'snapshot-memory.sh']) {
+      const src = join(__dirname, '..', 'scripts', scriptName);
+      const dest = join(scriptsDir, scriptName);
+      if (fs.existsSync(src) && !fs.existsSync(dest)) {
+        await fs.copy(src, dest);
+        await fs.chmod(dest, 0o755);
+      }
+    }
+
+    // BCFT-011: Initialize empty checkpoints directory
+    const checkpointsDir = join(targetDir, '.be', 'checkpoints');
+    await fs.ensureDir(checkpointsDir);
+    const checkpointsGitignore = join(checkpointsDir, '.gitignore');
+    if (!fs.existsSync(checkpointsGitignore)) {
+      await fs.writeFile(checkpointsGitignore, '# Local checkpoints — should not be committed\n*.json\n');
+    }
+
+    // BCFT-009: Copy event schema (for agent reference)
+    const schemaSrc = join(SRC_DIR, 'memory', 'event-schema.json');
+    const schemaDest = join(memoryDir, 'event-schema.json');
+    if (fs.existsSync(schemaSrc) && !fs.existsSync(schemaDest)) {
+      await fs.copy(schemaSrc, schemaDest);
+    }
+
+    spinner.succeed(`Memory System ready - 9 files + lazy index + event log (.be/memory/)`);
   } catch (err) {
     spinner.fail(`Failed to setup Memory System: ${err.message}`);
   }
@@ -333,7 +393,8 @@ function printNextSteps(config) {
   }
 
   console.log(row(chalk.white(pad('  Memory: .be/memory/ (cross-IDE sync)'))));
-  console.log(row(chalk.white(pad('  Stack: NestJS + PostgreSQL + Prisma'))));
+  console.log(row(chalk.white(pad('  Stack: NestJS + PostgreSQL'))));
+  console.log(row(chalk.white(pad('  ORM: Prisma (default) — swappable'))));
   console.log(mid);
   console.log(row(chalk.bold.yellow(pad("  Quick start:"))));
   console.log(row(chalk.white(pad('  /be-bootstrap user management API'))));

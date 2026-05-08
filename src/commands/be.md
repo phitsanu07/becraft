@@ -53,12 +53,32 @@ Start your response with:
 ## 🧠 Routing Pipeline
 
 ```
-1. MEMORY CHECK (read 9 files)
+1. MEMORY CHECK (lazy — read _index.json first, then populated only)
    ↓
 2. INTENT CLASSIFICATION
    - Pattern match keywords against intent matrix (see smart-routing skill)
    ↓
-3. CONFIDENCE SCORING (0-100)
+3. PRE-FLIGHT CHECKLIST (BCFT-005 — MANDATORY)
+   - Stack explicit?
+   - Prerequisites available (env, credentials)?
+   - Project state clear?
+   - Scope boundaries known?
+   - No conflicting decisions?
+
+   If ANY fails → ASK USER, do NOT delegate
+   ↓
+4. CONFIDENCE × SIZE ROUTING (BCFT-010)
+   - Score confidence (0-100%)
+   - Estimate task size (<5 / 5-15 / >15 files)
+   - Route per matrix:
+     - HIGH (≥90%) + <5 files  → direct specialist
+     - HIGH + 5-15 files       → plan (light) → specialist
+     - HIGH + >15 files        → plan (full)
+     - MEDIUM (70-89%)         → plan-orchestrator
+     - LOW (<70%)              → ASK USER
+   - Bootstrap → ALWAYS plan first
+   ↓
+5. CONFIDENCE SCORING (0-100)
    - HIGH (≥80) → Direct execution
    - MEDIUM (50-79) → Route to plan-orchestrator first
    - LOW (<50) → Ask clarification

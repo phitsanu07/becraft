@@ -326,7 +326,8 @@ RIGHT: PostgreSQL + JWT (decided in stack profile)
 | Question | Decision |
 |----------|----------|
 | Framework? | NestJS 10 |
-| DB? | PostgreSQL 16 + Prisma 5 |
+| DB? | PostgreSQL 16 |
+| ORM? | **User-configurable** — Prisma (default & recommended) / TypeORM / Drizzle / MikroORM |
 | Cache? | Redis 7 |
 | Queue? | BullMQ |
 | Auth? | Passport (JWT access + refresh) |

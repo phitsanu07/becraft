@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "becraft Memory Event",
+  "description": "Single event in the append-only memory log (events.jsonl). One JSON object per line.",
+  "type": "object",
+  "required": ["ts", "type", "agent"],
+  "additionalProperties": false,
+  "properties": {
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "decision",
+        "file_created",
+        "file_modified",
+        "endpoint_added",
+        "schema_changed",
+        "migration_applied",
+        "test_run",
+        "phase_started",
+        "phase_completed",
+        "agent_invoked",
+        "agent_completed",
+        "stack_detected",
+        "checkpoint_saved",
+        "feature_completed"
+      ]
+    },
+    "agent": {
+      "type": "string",
+      "description": "Which agent emitted this event",
+      "examples": ["plan-orchestrator", "bootstrap-agent", "schema-architect", "api-builder", "auth-guard", "observability", "test-runner"]
+    },
+    "data": {
+      "type": "object",
+      "description": "Event-specific payload"
+    }
+  },
+  "examples": [
+    {
+      "ts": "2026-05-08T10:00:00Z",
+      "type": "decision",
+      "agent": "bootstrap-agent",
+      "data": {
+        "id": "ADR-001",
+        "decision": "use Supabase JS client",
+        "reason": "no DATABASE_URL, only SUPABASE_URL"
+      }
+    },
+    {
+      "ts": "2026-05-08T10:01:23Z",
+      "type": "file_created",
+      "agent": "api-builder",
+      "data": {
+        "path": "src/products/products.service.ts",
+        "lines": 85
+      }
+    },
+    {
+      "ts": "2026-05-08T10:01:24Z",
+      "type": "endpoint_added",
+      "agent": "api-builder",
+      "data": {
+        "method": "GET",
+        "path": "/api/v1/products",
+        "auth": "public"
+      }
+    }
+  ]
+}

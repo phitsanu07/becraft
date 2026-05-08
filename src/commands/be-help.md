@@ -64,7 +64,8 @@ You are responding to `/be-help`. Display this help message immediately.
 |-------|------------|
 | Runtime | Node.js 22 LTS |
 | Framework | NestJS 10 |
-| Database | PostgreSQL 16 + Prisma 5 |
+| Database | PostgreSQL 16 |
+| ORM (configurable) | Prisma (default) / TypeORM / Drizzle / MikroORM |
 | Cache | Redis 7 |
 | Queue | BullMQ |
 | Auth | Passport (JWT) |

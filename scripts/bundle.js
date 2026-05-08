@@ -29,8 +29,8 @@ const BUNDLE_MAP = {
     skills: ['contract-first', 'memory-system', 'response-format'],
   },
   'be-bootstrap': {
-    agents: ['plan-orchestrator', 'schema-architect', 'api-builder', 'auth-guard', 'observability', 'test-runner'],
-    skills: ['contract-first', 'schema-design', 'api-design', 'auth-patterns', 'testing-pyramid', 'observability', 'response-format', 'memory-system'],
+    agents: ['plan-orchestrator', 'bootstrap-agent', 'schema-architect', 'api-builder', 'auth-guard', 'observability', 'test-runner'],
+    skills: ['contract-first', 'schema-design', 'api-design', 'auth-patterns', 'testing-pyramid', 'observability', 'response-format', 'memory-system', 'smart-routing'],
   },
   'be-schema': {
     agents: ['schema-architect'],
