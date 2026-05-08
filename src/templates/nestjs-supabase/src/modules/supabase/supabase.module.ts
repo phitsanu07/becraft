@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseService } from './supabase.service';
 
 export const SUPABASE_CLIENT = 'SUPABASE_CLIENT';
 export const SUPABASE_ADMIN_CLIENT = 'SUPABASE_ADMIN_CLIENT';
@@ -32,7 +33,8 @@ export const SUPABASE_ADMIN_CLIENT = 'SUPABASE_ADMIN_CLIENT';
         });
       },
     },
+    SupabaseService,
   ],
-  exports: [SUPABASE_CLIENT, SUPABASE_ADMIN_CLIENT],
+  exports: [SUPABASE_CLIENT, SUPABASE_ADMIN_CLIENT, SupabaseService],
 })
 export class SupabaseModule {}

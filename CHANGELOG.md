@@ -2,6 +2,24 @@
 
 All notable changes to becraft will be documented in this file.
 
+## [0.4.2] — 2026-05-08
+
+### Fixed
+
+- **nestjs-supabase template** — `supabase.module.ts` did not register
+  `SupabaseService` in `providers`/`exports`, but `HealthController`
+  injected it via DI. Boot would fail with:
+  `Nest can't resolve dependencies of HealthController (?). Please make sure that the argument SupabaseService at index [0] is available in the HealthModule context.`
+
+### Changed
+
+- Added `SupabaseService` to `SupabaseModule.providers` and `exports`.
+- Imported `SupabaseService` in `supabase.module.ts`.
+- Note: `.be/snippets/supabase-service.ts` already had this correctly —
+  the bug was only in the materialized template file.
+
+---
+
 ## [0.4.1] — 2026-05-08
 
 ### Fixed
