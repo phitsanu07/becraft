@@ -266,20 +266,7 @@ User: /be-test for products
 
 ---
 
-## 🆚 vs toh-framework
 
-| Aspect | toh-framework | becraft |
-|--------|---------------|---------|
-| **Focus** | Frontend (Next.js + UI) | Backend (NestJS + API) |
-| **Philosophy** | UI First | Contract First |
-| **Stack** | Next.js + Tailwind + shadcn/ui | NestJS + Prisma + PostgreSQL |
-| **Premium baseline** | Multi-page, animations | Logs, metrics, health, idempotency |
-| **Mock data** | Realistic Thai/EN names | Realistic + factories + seed scripts |
-| **Anti-patterns** | Purple gradients, Lorem ipsum | console.log in prod, missing rate limit, exposed stack traces |
-| **Output** | Working app at localhost:3000 | Working API at localhost:3000/docs |
-| **Agents** | 7 (UI + Dev + Backend etc.) | 6 (Schema + API + Auth + Test + etc.) |
-
----
 
 ## 🛠️ Development
 
