@@ -7,7 +7,17 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { Prisma } from '@prisma/client';
+
+/**
+ * Supabase PostgrestError shape (returned via { data, error } — not thrown by default).
+ * If service code chooses to rethrow it, this filter maps it to HTTP responses.
+ */
+interface PostgrestErrorLike {
+  code?: string;
+  message: string;
+  details?: string;
+  hint?: string;
+}
 
 interface ProblemDetails {
   type: string;
@@ -90,8 +100,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       };
     }
 
-    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
-      return this.handlePrismaError(exception, instance, requestId);
+    // Supabase PostgrestError (if service rethrows from { data, error })
+    if (this.isPostgrestError(exception)) {
+      return this.handleSupabaseError(exception, instance, requestId);
     }
 
     return {
@@ -104,27 +115,61 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
   }
 
-  private handlePrismaError(
-    err: Prisma.PrismaClientKnownRequestError,
+  private isPostgrestError(err: unknown): err is PostgrestErrorLike {
+    return (
+      typeof err === 'object' &&
+      err !== null &&
+      'message' in err &&
+      typeof (err as any).message === 'string' &&
+      ('code' in err || 'details' in err || 'hint' in err)
+    );
+  }
+
+  /**
+   * Map common Supabase / Postgres error codes to HTTP responses.
+   * Reference: https://www.postgresql.org/docs/current/errcodes-appendix.html
+   */
+  private handleSupabaseError(
+    err: PostgrestErrorLike,
     instance: string,
     requestId?: string,
   ): ProblemDetails {
     switch (err.code) {
-      case 'P2002':
+      case '23505': // unique_violation
         return {
           type: `${PROBLEM_BASE}/conflict`,
           title: 'Resource Conflict',
           status: 409,
-          detail: `A record with this ${(err.meta?.target as string[])?.join(', ') || 'value'} already exists`,
+          detail: err.details || 'A record with this value already exists',
           instance,
           requestId,
         };
-      case 'P2025':
+      case 'PGRST116': // PostgREST: not found / no rows
+      case '23503': // foreign_key_violation referencing missing row
         return {
           type: `${PROBLEM_BASE}/not-found`,
           title: 'Not Found',
           status: 404,
-          detail: 'The requested resource was not found',
+          detail: err.details || 'The requested resource was not found',
+          instance,
+          requestId,
+        };
+      case '42501': // insufficient_privilege (RLS denied)
+        return {
+          type: `${PROBLEM_BASE}/forbidden`,
+          title: 'Forbidden',
+          status: 403,
+          detail: 'You do not have permission to perform this action',
+          instance,
+          requestId,
+        };
+      case '23514': // check_violation
+      case '23502': // not_null_violation
+        return {
+          type: `${PROBLEM_BASE}/validation`,
+          title: 'Validation Failed',
+          status: 422,
+          detail: err.details || err.message,
           instance,
           requestId,
         };

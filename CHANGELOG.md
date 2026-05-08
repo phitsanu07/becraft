@@ -2,6 +2,24 @@
 
 All notable changes to becraft will be documented in this file.
 
+## [0.4.1] — 2026-05-08
+
+### Fixed
+
+- **nestjs-supabase template** — `all-exceptions.filter.ts` had stale
+  `import { Prisma } from '@prisma/client'` copied from nestjs-base.
+  This caused `npm run build` to fail since Supabase variant doesn't
+  install Prisma.
+
+### Changed
+
+- Replaced `Prisma.PrismaClientKnownRequestError` handler with
+  `PostgrestErrorLike` handler — maps Supabase/Postgres error codes
+  (23505 unique violation, PGRST116 not found, 42501 RLS denied,
+  23514/23502 validation, etc.) to RFC 7807 responses.
+
+---
+
 ## [0.4.0] — 2026-05-08
 
 ### 🎉 Production-Ready Milestone
