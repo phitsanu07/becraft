@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -19,7 +19,11 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.set?.('trust proxy', 1);
+  (
+    app.getHttpAdapter().getInstance() as {
+      set?: (k: string, v: unknown) => void;
+    }
+  ).set?.('trust proxy', 1);
 
   app.setGlobalPrefix('api');
   app.enableVersioning({

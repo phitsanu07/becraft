@@ -1,3 +1,22 @@
+/**
+ * Snippet: SupabaseModule for NestJS
+ *
+ * Used by: bootstrap-agent (when stack = Supabase JS)
+ * Materializes to: src/modules/supabase/supabase.module.ts
+ *
+ * Pairs with:
+ *   - supabase-tokens.ts   → src/modules/supabase/supabase.tokens.ts
+ *   - supabase-service.ts  → src/modules/supabase/supabase.service.ts
+ *
+ * Re-exports tokens for backwards compatibility with imports of the form
+ * `from './supabase.module'`. New code should import from `./supabase.tokens`
+ * directly.
+ *
+ * Customize: factory options (autoRefreshToken/persistSession) only when
+ * the application has its own session store; defaults are correct for
+ * stateless backend usage.
+ */
+
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';

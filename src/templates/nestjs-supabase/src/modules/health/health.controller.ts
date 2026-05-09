@@ -1,6 +1,7 @@
-import { Controller, Get, HealthCheckError } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import {
   HealthCheck,
+  HealthCheckError,
   HealthCheckService,
   HealthIndicatorResult,
 } from '@nestjs/terminus';
