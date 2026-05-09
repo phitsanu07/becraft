@@ -2,6 +2,59 @@
 
 All notable changes to becraft will be documented in this file.
 
+## [0.4.4] — 2026-05-09
+
+### Fixed — nestjs-supabase template P0 bugs
+
+Closes the remaining P0 items from
+`CR/becraft-template-fixes-request.md` (verified against a real
+read-only Supabase API project — 25 tests passing).
+
+- **#2 — Circular import / undefined DI tokens.** Token constants
+  (`SUPABASE_CLIENT`, `SUPABASE_ADMIN_CLIENT`) extracted to a new leaf
+  file `src/modules/supabase/supabase.tokens.ts`. `supabase.service.ts`
+  now imports tokens from `./supabase.tokens`. `supabase.module.ts`
+  re-exports tokens for backwards compatibility. Bug only manifested at
+  runtime startup (unit tests masked it via `overrideProvider`).
+- **#4 — `cookie-parser` namespace import.** `import * as cookieParser`
+  → `import cookieParser` (default import). The namespace form is not
+  callable under TypeScript strict mode + `esModuleInterop: true`.
+- **#5 — `app.set?.()` not on `INestApplication`.** Replaced with
+  `app.getHttpAdapter().getInstance() as { set?: ... }` cast — `set`
+  belongs to the underlying Express instance, not Nest's app abstraction.
+- **#6 — `HealthCheckError` imported from wrong package.** Moved from
+  `@nestjs/common` to `@nestjs/terminus` (where it actually lives).
+
+### Changed — snippets aligned with template
+
+- Split `src/snippets/supabase-service.ts` into 3 files matching the
+  materialized output structure: `supabase-tokens.ts` (leaf), then
+  `supabase-service.ts` (imports tokens), then `supabase-module.ts`
+  (imports both). Prevents bootstrap-agent from re-emitting the
+  circular-import bug.
+- `snippets/README.md` lists the three files with their target paths.
+
+### Why these surfaced now
+
+P0-2 was masked by tests (mocks bypass real DI). P0-4/5/6 only fire
+under `noImplicitAny`-style strict TS, which the source project enabled
+but the template's default `tsconfig` left lax enough to compile. Both
+classes are addressed here.
+
+### Migration
+
+Existing projects:
+
+```bash
+npx -y github:phitsanu07/becraft#v0.4.4 install --quick
+```
+
+For projects already generated from v0.4.0–v0.4.3 templates, apply the
+diffs manually from `CR/becraft-template-fixes-request.md`. Re-running
+install does NOT touch existing user code in `src/`.
+
+---
+
 ## [0.4.3] — 2026-05-08
 
 ### Added — BCFT-014: Supabase Query Patterns Skill

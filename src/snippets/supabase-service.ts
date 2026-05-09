@@ -2,19 +2,22 @@
  * Snippet: SupabaseService for NestJS
  *
  * Used by: bootstrap-agent (when stack = Supabase JS)
+ * Materializes to: src/modules/supabase/supabase.service.ts
+ *
  * Provides 2 clients:
  *   - client: anon key (respects RLS) — use for normal operations
- *   - admin: service-role key (bypasses RLS) — use carefully
+ *   - admin: service-role key (bypasses RLS) — use carefully, log every use
  *
- * Customize: usually no changes needed
+ * Pairs with:
+ *   - supabase-tokens.ts  → src/modules/supabase/supabase.tokens.ts
+ *   - supabase-module.ts  → src/modules/supabase/supabase.module.ts
+ *
+ * Customize: usually no changes needed. Add helpers (ping, etc.) here.
  */
 
-import { Global, Module, Injectable, Inject, Logger } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-
-export const SUPABASE_CLIENT = 'SUPABASE_CLIENT';
-export const SUPABASE_ADMIN_CLIENT = 'SUPABASE_ADMIN_CLIENT';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { SUPABASE_CLIENT, SUPABASE_ADMIN_CLIENT } from './supabase.tokens';
 
 @Injectable()
 export class SupabaseService {
@@ -42,36 +45,3 @@ export class SupabaseService {
     }
   }
 }
-
-@Global()
-@Module({
-  imports: [ConfigModule],
-  providers: [
-    {
-      provide: SUPABASE_CLIENT,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService): SupabaseClient => {
-        const url = config.getOrThrow<string>('SUPABASE_URL');
-        const anonKey = config.getOrThrow<string>('SUPABASE_ANON_KEY');
-        return createClient(url, anonKey, {
-          auth: { persistSession: false, autoRefreshToken: false },
-        });
-      },
-    },
-    {
-      provide: SUPABASE_ADMIN_CLIENT,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService): SupabaseClient | null => {
-        const url = config.get<string>('SUPABASE_URL');
-        const serviceKey = config.get<string>('SUPABASE_SERVICE_ROLE_KEY');
-        if (!url || !serviceKey) return null;
-        return createClient(url, serviceKey, {
-          auth: { persistSession: false, autoRefreshToken: false },
-        });
-      },
-    },
-    SupabaseService,
-  ],
-  exports: [SUPABASE_CLIENT, SUPABASE_ADMIN_CLIENT, SupabaseService],
-})
-export class SupabaseModule {}
