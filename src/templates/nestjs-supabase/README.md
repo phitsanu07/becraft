@@ -28,6 +28,32 @@ Open:
 - 📊 Liveness: http://localhost:3000/health/live
 - ✅ Readiness: http://localhost:3000/health/ready (pings Supabase)
 
+## 🍎 Local development on macOS
+
+Node 22+/25 on macOS does not consult the OS keychain for TLS validation
+by default, so connections to Supabase (or any service behind certain
+public CA chains) can fail with `UNABLE_TO_GET_ISSUER_CERT_LOCALLY` even
+though `curl` and Safari work fine.
+
+The `prestart*` hooks auto-generate `ca-bundle.pem` from your macOS
+keychain on first run, and `start*` scripts pass it via
+`NODE_EXTRA_CA_CERTS`. To regenerate manually (e.g. after IT pushes new
+corporate roots):
+
+```bash
+npm run setup:ca
+```
+
+`ca-bundle.pem` is gitignored — it's a user-local file. Commit nothing.
+
+On Linux:
+
+```bash
+export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+```
+
+On Windows: rely on Node's `--use-system-ca` flag (Node 22+).
+
 ## 📦 Built-In
 
 - ✅ **NestJS 10** with TypeScript strict mode

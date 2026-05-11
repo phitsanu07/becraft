@@ -2,6 +2,58 @@
 
 All notable changes to becraft will be documented in this file.
 
+## [0.5.0] — 2026-05-11
+
+### Added — macOS TLS trust-store workflow (P1)
+
+Closes the P1 item from `CR/becraft-template-fixes-request.md`.
+
+Node 22+/25 on macOS does not consult the OS keychain for TLS validation,
+so projects hitting certain public CA chains (verified: Google Trust
+Services WE1 → supabase.co) fail with `UNABLE_TO_GET_ISSUER_CERT_LOCALLY`
+even though `curl` and Safari work. `--use-system-ca` was insufficient
+on Node 25.9 in the verifying project. The reliable fix is exporting
+the keychain to a PEM and pointing `NODE_EXTRA_CA_CERTS` at it.
+
+Applied to **both** `nestjs-base` and `nestjs-supabase` templates:
+
+- **New** `scripts/setup-ca.sh` (executable) — exports macOS System +
+  user keychains into `./ca-bundle.pem`. Linux/Windows users get a
+  clear error message pointing to the OS-appropriate alternative.
+- **`package.json` scripts** — `setup:ca` task + `prestart*` hooks
+  that auto-run it on macOS when `ca-bundle.pem` is missing.
+  `start*`, `start:dev`, `start:debug`, `start:prod` now export
+  `NODE_OPTIONS="--dns-result-order=ipv4first"` and
+  `NODE_EXTRA_CA_CERTS="${PWD}/ca-bundle.pem"`.
+- **`.gitignore`** — adds `ca-bundle.pem` (per-user file containing
+  keychain contents; MUST NOT be committed).
+- **README** — new "Local development on macOS" section with regen
+  instructions and Linux/Windows guidance.
+
+Prestart hooks are guarded by `test "$(uname)" != "Darwin"` so Linux
+and Windows users see no behavior change. macOS users get
+zero-touch first-run.
+
+### Why minor bump
+
+New scripts + first-run behavior change on macOS = additive feature.
+No breaking changes to existing project code. Linux/Windows scripts
+are functionally identical to v0.4.4.
+
+### Migration
+
+Existing projects:
+
+```bash
+npx -y github:phitsanu07/becraft#v0.5.0 install --quick
+```
+
+For projects already generated, copy `scripts/setup-ca.sh` and the new
+`package.json` `start*`/`prestart*`/`setup:ca` scripts manually; add
+`ca-bundle.pem` to `.gitignore`.
+
+---
+
 ## [0.4.4] — 2026-05-09
 
 ### Fixed — nestjs-supabase template P0 bugs
