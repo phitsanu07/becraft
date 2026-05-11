@@ -334,18 +334,4 @@ MIT — see [LICENSE](LICENSE)
 
 ---
 
-## 🙏 Acknowledgments
 
-Inspired by [toh-framework](https://github.com/wasintoh/toh-framework) — credit to Wasin Treesinthuros for the AODD pattern.
-
-becraft adapts the architecture for backend-only Contract-Driven Development.
-
----
-
-<p align="center">
-  <strong>"Craft Production Backends, Not Prototypes."</strong>
-</p>
-
-<p align="center">
-  Made for Solo Developers who ship production APIs.
-</p>
